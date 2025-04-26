@@ -22,7 +22,7 @@ jobs:
     - name: SSH into EC2 and Deploy
       run: |
         ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_ed25519 ubuntu@${{ secrets.EC2_PUBLIC_IP }} << 'EOF'
-          /home/ubuntu/apps/flask-cicd-app
+          cd /home/ubuntu/apps/flask-cicd-app
           git pull origin main
           source venv/bin/activate
           pip install -r requirements.txt
