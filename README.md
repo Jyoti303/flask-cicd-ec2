@@ -198,3 +198,49 @@ git push origin main
 ---
 
 # 🎉 Done! Your Flask App now has a working CI/CD pipeline to EC2 using GitHub Actions!
+
+---
+
+## 💡 Common Troubleshooting Tips
+
+- **Deployment Failed on GitHub Actions?**
+  - Check your GitHub Actions logs carefully under the **Actions** tab.
+  - Most common issues:
+    - Wrong SSH key permissions.
+    - EC2 IP address changed (Elastic IP recommended).
+    - Python/Flask not installed on EC2.
+
+- **Permission Denied (publickey) Error?**
+  - Double-check that your SSH private key (`EC2_SSH_PRIVATE_KEY`) is correctly added in GitHub Secrets.
+  - Ensure the public key is properly added to `/home/ubuntu/.ssh/authorized_keys` on the EC2 server.
+
+- **Flask App Not Accessible?**
+  - Make sure EC2 Security Group allows **Inbound Rules** for:
+    - Port `5000` (for Flask app)
+    - Port `22` (for SSH)
+
+- **App URL Still Showing Old Code After Push?**
+  - Sometimes EC2 may have cached processes.
+  - You can manually SSH into EC2 and run:
+    ```bash
+    pkill -f flask
+    git pull origin main
+    source venv/bin/activate
+    pip install -r requirements.txt
+    nohup flask run --host=0.0.0.0 --port=5000 &
+    ```
+
+- **Server Crashes After Few Hours?**
+  - If using **nohup**, make sure it's running properly.
+  - For production, consider setting up **Gunicorn + Nginx** later (advanced topic ✨).
+
+---
+
+## ✨ Future Improvements
+- Set up a **custom domain** (like `www.myflaskapp.com`) instead of IP address.
+- Use **Elastic IP** on AWS to prevent IP address changes.
+- Set up **auto-scaling** and **load balancers** for bigger apps.
+- Replace Flask's built-in server with **Gunicorn** for production.
+
+---
+
