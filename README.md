@@ -1,144 +1,125 @@
-# Flask EC2 CI/CD Project
+# Flask CI/CD with GitHub Actions and EC2 🚀
 
-This project demonstrates a CI/CD pipeline using AWS CodePipeline and CodeDeploy to deploy a Flask web app to an EC2 instance.
+![CI/CD](https://img.shields.io/github/actions/workflow/status/Jyoti303/flask-cicd-ec2/deploy.yml?label=Deploy%20Status)
 
-Flask CI/CD with GitHub Actions and EC2
-This repository demonstrates how to set up a Flask app with a CI/CD pipeline using GitHub Actions and deploy it to an AWS EC2 instance. Each time changes are pushed to the main branch, the app is automatically deployed to the EC2 instance.
+This repository demonstrates how to set up a **Flask app** with a **CI/CD pipeline** using **GitHub Actions** and deploy it automatically to an **AWS EC2 instance** whenever changes are pushed to the `main` branch.
 
-Table of Contents
-Prerequisites
+---
 
-Setup
+## 📋 Table of Contents
+- [Prerequisites](#prerequisites)
+- [Setup](#setup)
+  - [Step 1: Clone the Repository](#step-1-clone-the-repository)
+  - [Step 2: Set up EC2 Instance](#step-2-set-up-ec2-instance)
+  - [Step 3: Set up SSH Key for GitHub Actions](#step-3-set-up-ssh-key-for-github-actions)
+  - [Step 4: Create Flask App and Test Locally](#step-4-create-flask-app-and-test-locally)
+  - [Step 5: Configure GitHub Secrets](#step-5-configure-github-secrets)
+  - [Step 6: Set up GitHub Actions CI/CD Workflow](#step-6-set-up-github-actions-cicd-workflow)
+- [CI/CD Pipeline](#cicd-pipeline)
+- [How It Works](#how-it-works)
+- [Testing the Pipeline](#testing-the-pipeline)
 
-Step 1: Clone the Repository
+---
 
-Step 2: Set up EC2 Instance
+## 📌 Prerequisites
 
-Step 3: Set up SSH Key for GitHub Actions
+Make sure you have:
 
-Step 4: Create Flask App and Test Locally
+- **AWS Account** and **EC2 Instance** (Ubuntu server)
+- **Git** installed locally
+- **GitHub Account** and a **new repository**
+- **SSH Key Pair** (for GitHub Actions to connect to EC2)
 
-Step 5: Configure GitHub Secrets
+---
 
-Step 6: Set up GitHub Actions CI/CD Workflow
+## 🛠 Setup
 
-CI/CD Pipeline
+### Step 1: Clone the Repository
 
-How It Works
-
-Testing the Pipeline
-
-Prerequisites
-Before you begin, ensure you have the following tools installed:
-
-AWS Account: Set up AWS EC2 instance for hosting the Flask app.
-
-Git: Installed and configured on your machine.
-
-SSH Key: Set up SSH keys for secure access to your EC2 instance.
-
-GitHub Account: Repository created for hosting the Flask app.
-
-Setup
-Step 1: Clone the Repository
-Clone the repository from GitHub to your local machine:
-
-bash
-Copy
-Edit
+```bash
 git clone https://github.com/Jyoti303/flask-cicd-ec2.git
-Step 2: Set up EC2 Instance
-Launch an EC2 Instance:
+```
 
-Choose the Ubuntu 22.04 LTS AMI.
+---
 
-Select the t2.micro instance type (free tier eligible).
+### Step 2: Set up EC2 Instance
 
-Create or use an existing SSH key pair to access the instance.
+1. Launch an EC2 instance:
+   - Ubuntu 22.04 LTS AMI
+   - t2.micro instance type (free tier)
+2. Connect to EC2:
+   ```bash
+   ssh -i "your-key.pem" ubuntu@your-ec2-public-ip
+   ```
+3. Install required packages:
+   ```bash
+   sudo apt update
+   sudo apt install python3 python3-pip git -y
+   pip3 install flask
+   ```
 
-Connect to EC2 Instance:
+---
 
-Use SSH to connect to your EC2 instance:
+### Step 3: Set up SSH Key for GitHub Actions
 
-bash
-Copy
-Edit
-ssh -i "your-key.pem" ubuntu@your-ec2-public-ip
-Install Required Packages: On your EC2 instance, install Python, Flask, Git, and other dependencies:
+1. Generate new SSH keys locally:
+   ```bash
+   mkdir -p ~/.ssh/github-actions-ec2
+   ssh-keygen -t ed25519 -f ~/.ssh/github-actions-ec2/id_ed25519 -C "github-actions-ec2" -N ""
+   ```
+2. Copy and add public key to EC2:
+   ```bash
+   cat ~/.ssh/github-actions-ec2/id_ed25519.pub
+   ```
+   - Paste the public key into `/home/ubuntu/.ssh/authorized_keys` file on EC2.
 
-bash
-Copy
-Edit
-sudo apt update
-sudo apt install python3 python3-pip git -y
-pip3 install flask
-Step 3: Set up SSH Key for GitHub Actions
-Generate a new SSH Key on your local machine:
+3. Add **private key** to GitHub Secrets:
+   - Name: `EC2_SSH_PRIVATE_KEY`
+   - Value: (paste your private key content)
 
-bash
-Copy
-Edit
-mkdir -p ~/.ssh/github-actions-ec2
-ssh-keygen -t ed25519 -f ~/.ssh/github-actions-ec2/id_ed25519 -C "github-actions-ec2" -N ""
-Copy the public key:
+---
 
-bash
-Copy
-Edit
-cat ~/.ssh/github-actions-ec2/id_ed25519.pub
-Add the public key to the EC2 instance’s authorized_keys:
+### Step 4: Create Flask App and Test Locally
 
-bash
-Copy
-Edit
-nano ~/.ssh/authorized_keys
-# Paste the public key here
-Add the private key to GitHub Secrets:
+1. Create `hello.py`:
 
-Go to your GitHub repository > Settings > Secrets > New repository secret.
-
-Name: EC2_SSH_PRIVATE_KEY
-
-Value: Paste the contents of your private key (~/.ssh/github-actions-ec2/id_ed25519).
-
-Step 4: Create Flask App and Test Locally
-Create the Flask App (e.g., hello.py):
-
-python
-Copy
-Edit
+```python
 from flask import Flask
 app = Flask(__name__)
 
 @app.route('/')
 def hello():
-    return 'Hello, World from Flask on EC2!'
+    return '🚀 Hello from your CI/CD EC2 pipeline!'
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
-Test locally by running:
+```
 
-bash
-Copy
-Edit
-python3 hello.py
-Access the app in a browser at http://<your-ec2-public-ip>:5000.
+2. Run locally to test:
+   ```bash
+   python3 hello.py
+   ```
+3. Access via browser:  
+   `http://<your-ec2-public-ip>:5000`
 
-Step 5: Configure GitHub Secrets
-Add EC2 Public IP to GitHub Secrets:
+---
 
-Go to your repository > Settings > Secrets > New repository secret.
+### Step 5: Configure GitHub Secrets
 
-Name: EC2_PUBLIC_IP
+Add these secrets:
 
-Value: Your EC2 public IP address.
+| Secret Name          | Value                |
+| -------------------- | -------------------- |
+| `EC2_SSH_PRIVATE_KEY` | (your private SSH key content) |
+| `EC2_PUBLIC_IP`       | (your EC2 public IP) |
 
-Step 6: Set up GitHub Actions CI/CD Workflow
-Create the .github/workflows/deploy.yml file in your GitHub repository:
+---
 
-yaml
-Copy
-Edit
+### Step 6: Set up GitHub Actions CI/CD Workflow
+
+Create `.github/workflows/deploy.yml`:
+
+```yaml
 name: Deploy Flask App to EC2
 
 on:
@@ -170,42 +151,50 @@ jobs:
           pkill -f flask || true
           nohup flask run --host=0.0.0.0 --port=5000 &
         EOF
-Push your code to GitHub:
+```
 
-bash
-Copy
-Edit
+Push the code to GitHub:
+
+```bash
 git add .
-git commit -m "Set up CI/CD pipeline"
+git commit -m "Setup CI/CD"
 git push origin main
-CI/CD Pipeline
-The CI/CD pipeline is configured to:
+```
 
-Trigger on every push to the main branch.
+---
 
-Set up SSH for secure communication with the EC2 instance.
+## 🔥 CI/CD Pipeline
 
-Deploy the Flask app by pulling the latest changes from GitHub, installing dependencies, and restarting the Flask app.
+- Triggers automatically on **push to main branch**.
+- Connects via SSH to EC2.
+- Pulls latest code.
+- Installs dependencies.
+- Restarts Flask app on the server.
 
-How It Works
-GitHub Actions listens for changes on the main branch.
+---
 
-Once a change is detected, it:
+## ⚙️ How It Works
 
-Sets up an SSH connection to the EC2 instance using the private key stored in GitHub secrets.
+1. You push your code to GitHub →  
+2. GitHub Actions triggers →  
+3. Connects to EC2 →  
+4. Pulls new code →  
+5. Runs Flask app automatically.
 
-Pulls the latest code from the main branch.
+---
 
-Installs dependencies listed in requirements.txt.
+## 🧪 Testing the Pipeline
 
-Restarts the Flask app using the flask run command.
+- Modify any code (example: change text in `hello.py`)
+- Push changes:
+  ```bash
+  git add .
+  git commit -m "Update text"
+  git push origin main
+  ```
+- Check the app in the browser:  
+  `http://<your-ec2-public-ip>:5000`
 
-Testing the Pipeline
-Make changes to your Flask app locally.
+---
 
-Commit and push those changes to the main branch.
-
-GitHub Actions will trigger the pipeline and deploy the updated code to your EC2 instance.
-
-Verify the changes by visiting your EC2 instance’s public IP at http://<your-ec2-public-ip>:5000.
-
+# 🎉 Done! Your Flask App now has a working CI/CD pipeline to EC2 using GitHub Actions!
